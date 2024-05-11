@@ -1,0 +1,29 @@
+all:
+  children:
+    primary_node:
+      hosts:
+        localhost:
+          ansible_user: marlon
+          ansible_connection: local
+
+    ssh_nodes_manager:
+      hosts:
+        node01:
+          ansible_user: node01
+          ansible_host: 172.24.31.181
+          ansible_become_method: sudo 
+          ansible_become_pass: '{{ node01key }}'
+
+    ssh_nodes_worker:
+      hosts:
+        node02:
+          ansible_user: node02
+          ansible_host: 172.24.31.182
+          ansible_become_method: sudo 
+          ansible_become_pass: '{{ node02key }}'
+
+        node03:
+          ansible_user: node03
+          ansible_host: 172.24.31.183
+          ansible_become_method: sudo 
+          ansible_become_pass: '{{ node03key }}'

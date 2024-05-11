@@ -1,0 +1,198 @@
+- hosts: primary_node
+  become: yes
+  tasks:
+    - name: Load environment variables from .env file
+      ansible.builtin.include_vars:
+        file: .envansible
+        name: env_vars
+
+    - name: "Add Variables"
+      add_host:
+        name:   "env_variables"
+        DOCKER_VERSION: "{{ env_vars.DOCKER_VERSION }}"
+
+    - name: Use environment variables from primary_node
+      debug:
+        msg: "DOCKER_VERSION is {{ hostvars['env_variables']['DOCKER_VERSION'] }}"
+
+- hosts: all
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Clean up duplicate entries in APT sources list
+      ignore_errors: yes
+      shell: |
+        if [ -f /etc/apt/sources.list.d/archive_uri-https_download_docker_com_linux_ubuntu-jammy.list ]; then
+          sudo rm /etc/apt/sources.list.d/archive_uri-https_download_docker_com_linux_ubuntu-jammy.list
+        fi
+        if [ -f /etc/apt/sources.list.d/docker.list ]; then
+          sudo rm /etc/apt/sources.list.d/docker.list
+        fi 
+    
+    - name: Uninstall old versions
+      apt: 
+        name: "{{ item }}"
+        state: absent
+        purge: yes
+      loop: [docker-doc, docker.io, docker-compose, docker-compose-v2, podman-docker, containerd, run, docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin, docker-ce-rootless-extras]
+      tags: clear 
+
+    - name: UpdateRaw
+      shell: apt-get update -y
+    
+    - name: Install basic APT packages
+      apt: pkg={{item}} state=latest
+      with_items: 
+      - 'curl'
+      - 'apt-transport-https'
+      - 'ca-certificates'
+      - 'gnupg-agent'
+      - 'software-properties-common'
+
+    - name: add docker apt key
+      shell: curl -4fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/docker-archive-keyring.gpg
+
+    - name: Add Docker repository for Jammy
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
+        state: present
+
+    - name: UpdateRaw
+      shell: apt-get update -y
+
+    - name: Install Docker CE 
+      apt:
+        name: "docker-ce=5:{{ hostvars['env_variables']['DOCKER_VERSION'] }}-1~ubuntu.22.04~jammy"
+        state: present
+        update_cache: yes
+        allow_downgrades: yes 
+
+    - name: Install Docker CLI
+      apt:
+        name: "docker-ce-cli=5:{{ hostvars['env_variables']['DOCKER_VERSION'] }}-1~ubuntu.22.04~jammy"
+        state: present
+        update_cache: yes
+        allow_downgrades: yes 
+
+    - name: install docker and its dependencies
+      apt:
+        pkg:
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        allow_downgrades: yes
+
+    - name: Add Docker group
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Add user to Docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: start and enable docker daemon
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: start and enable containerd daemon
+      service:
+        name: containerd
+        state: started
+        enabled: yes
+
+    - name: Check if Docker Swarm is initialized
+      shell: docker node ls
+      register: swarm_status
+      ignore_errors: true
+
+    # allow docker ports to the firewall
+
+    - name: Allow Docker Swarm management port
+      ufw:
+        rule: allow
+        port: 2377
+        proto: tcp
+
+    - name: Allow Docker daemon port
+      ufw:
+        rule: allow
+        port: 2376
+        proto: tcp
+
+    - name: Allow Docker Swarm node port
+      ufw:
+        rule: allow
+        port: 7946
+        proto: tcp
+      become: yes
+
+    - name: Allow Docker Swarm node port
+      ufw:
+        rule: allow
+        port: 7946
+        proto: udp
+      become: yes
+
+    - name: Allow Docker Swarm overlay network port
+      ufw:
+        rule: allow
+        port: 4789
+        proto: udp
+      become: yes
+
+    - name: Reload UFW
+      command: ufw reload
+      become: yes
+
+    - name: Enable UFW
+      command: ufw --force enable
+      become: yes
+
+- hosts: primary_node
+  become: yes
+  tasks:
+    - name: Initialize Docker Swarm if not already initialized
+      shell: docker swarm init
+      when: "'This node is not a swarm manager' in swarm_status.stderr"
+
+    - name: Get the manager token
+      shell: sudo docker swarm join-token manager | grep 'docker swarm join'
+      register: manager_token_command
+      ignore_errors: true
+
+    - name: Get the worker token
+      shell: sudo docker swarm join-token worker | grep 'docker swarm join'
+      register: worker_token_command
+      ignore_errors: true
+
+    - name: "Add Variables"
+      add_host:
+        name:   "token_command"
+        manager_token_command: "{{ manager_token_command.stdout }}"
+        worker_token_command: "{{ worker_token_command.stdout }}"
+
+
+- hosts: ssh_nodes_manager
+  become: yes
+  tasks:
+    - name: Join Docker Swarm as manager
+      command: "{{ hostvars['token_command']['manager_token_command'] }}"
+      register: join_manager_output
+      ignore_errors: true
+
+
+- hosts: ssh_nodes_worker
+  become: yes
+  tasks:
+    - name: Join Docker Swarm as worker
+      command: "{{ hostvars['token_command']['worker_token_command'] }}"
+      register: join_worker_output
+      ignore_errors: true
+
+
