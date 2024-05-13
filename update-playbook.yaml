@@ -1,10 +1,5 @@
 - hosts: primary_node
   become: yes
-  gather_facts: no
   tasks:
-    - name: Update all host/vm packages
-      ansible.builtin.apt:
-        update_cache: true
-        cache_valid_time: 3600
-        name: "*"
-        state: latest
+    - name: UpdateRaw
+      shell: apt-get update -y
