@@ -2,10 +2,6 @@
   become: yes
   gather_facts: no
   tasks:
-
-    - name: Set the locale
-      ansible.builtin.command: update-locale LANG=en_US.UTF-8
-
     - name: Update all host/vm packages
       ansible.builtin.apt:
         update_cache: true
