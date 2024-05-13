@@ -1,7 +1,10 @@
 - hosts: primary_node
   become: yes
-  gather_facts: no
+  gather_facts: yes
   tasks:
+    - name: Gather facts
+      ansible.builtin.setup
+      
     - name: Set the locale
       ansible.builtin.command: update-locale LANG=en_US.UTF-8
 
