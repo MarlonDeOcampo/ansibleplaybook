@@ -2,9 +2,7 @@
   become: yes
   tasks:
     - name: Set the locale
-      ansible.posix.locale_gen:
-        name: en_US.UTF-8
-        state: present
+      ansible.builtin.command: update-locale LANG=en_US.UTF-8
 
     - name: Update all host/vm packages
       ansible.builtin.apt:
