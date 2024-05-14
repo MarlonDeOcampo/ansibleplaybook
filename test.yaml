@@ -1,0 +1,28 @@
+all:
+  children:
+    primary:
+      hosts:
+        local:
+            ansible_host: 172.24.31.39
+            ansible_user: marlon
+            ansible_become: true
+            ansible_become_pass: "kayle@zhane"
+    client:
+      hosts:
+        node01:
+          ansible_host: 172.24.31.181
+          ansible_user: node01
+          ansible_become: true
+          ansible_become_pass: "supersecretpass"
+        node02:
+          ansible_host: 172.24.31.182
+          ansible_user: node02
+          ansible_become: true
+          ansible_become_pass: "supersecretpass"
+        node03:
+          ansible_host: 172.24.31.183
+          ansible_user: node03
+          ansible_become: true
+          ansible_become_pass: "supersecretpass"
+
+        

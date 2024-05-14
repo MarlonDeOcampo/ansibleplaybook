@@ -7,3 +7,11 @@
 
     - name: UpdateRaw
       shell: apt-get upgrade -y
+
+    - name: Pull hello-world image
+      docker_image:
+        name: hello-world
+        state: present
+
+    - name: create folder
+      shell: mkdir /var/log/test
