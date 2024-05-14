@@ -1,0 +1,7 @@
+---
+- name: Ping Google from each node
+  hosts: primary
+  become: true
+  tasks:
+    - name: UpdateRaw
+      shell: apt-get update -y
