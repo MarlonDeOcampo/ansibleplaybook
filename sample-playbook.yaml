@@ -1,7 +1,9 @@
----
-- name: Ping Google from each node
-  hosts: primary
-  become: true
+- hosts: all
+  become: yes
+  become_method: sudo
   tasks:
     - name: UpdateRaw
       shell: apt-get update -y
+
+    - name: UpdateRaw
+      shell: apt-get upgrade -y

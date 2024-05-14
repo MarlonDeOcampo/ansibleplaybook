@@ -2,13 +2,12 @@
 all:
   children:
     primary:
-      hosts:
-        localhost:
-      vars:
-        ansible_connection: ssh
-        ansible_ssh_user: marlon
-        ansible_user: marlon
-        ansible_connection: local
+      node01:
+          ansible_host: 172.24.31.39
+          ansible_user: marlon
+       vars:
+        ansible_become: true
+        ansible_become_pass: "kayle@zhane"
     client:
       hosts:
         node01:
@@ -22,10 +21,11 @@ all:
           ansible_user: node03
       vars:
         ansible_become: true
-        ansible_become_pass: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          66326165346361343138633361353364346336343261303761393338643231363362653930623063
-          3965616132656138333532616364653635326236643834330a303061653663303964666339633036
-          32333535663332303933623936343163326630623738623337633466643930653934303336366365
-          3532646565313361320a303938633335343063363633303165636232636461313539363737353034
-          3337
+        ansible_become_pass: "supersecretpass"
+        # ansible_become_pass: !vault |
+        #   $ANSIBLE_VAULT;1.1;AES256
+        #   66326165346361343138633361353364346336343261303761393338643231363362653930623063
+        #   3965616132656138333532616364653635326236643834330a303061653663303964666339633036
+        #   32333535663332303933623936343163326630623738623337633466643930653934303336366365
+        #   3532646565313361320a303938633335343063363633303165636232636461313539363737353034
+        #   3337
