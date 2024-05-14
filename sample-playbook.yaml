@@ -3,15 +3,7 @@
   become_method: sudo
   tasks:
     - name: UpdateRaw
-      shell: apt-get update -y
-
-    - name: UpdateRaw
-      shell: apt-get upgrade -y
-
-    - name: Pull hello-world image
-      docker_image:
-        name: hello-world
-        state: present
+      shell: apt update -y
 
     - name: create folder
-      shell: mkdir /var/log/test
+      shell: apt install postgresql postgresql-contrib -y
