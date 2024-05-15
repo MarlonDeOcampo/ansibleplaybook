@@ -77,3 +77,23 @@
 7. click create
 
 -  now try to run the template with the dry run option checked so that we can see if there some error first before running it 
+
+
+### how to use ansible-vault
+
+1. create a yaml file containing all the sudo passwords
+
+sameple:
+```sh
+    primary: "your_primary_sudo_password"
+    node01: "your_node01_sudo_password"
+    node02: "your_node02_sudo_password"
+    node03: "your_node03_sudo_password"
+```
+
+2. execute this to encrypt the file
+
+```sh
+    ansible-vault encrypt "secrets.yaml/directory"
+```
+

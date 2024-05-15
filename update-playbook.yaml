@@ -1,7 +1,7 @@
 - name: Example Playbook
   hosts: all
   vars_files:
-    - "~/ansible_vault/secrets.yaml"
+    - "/etc/semaphore/ansible_vault/secrets.yaml"
   tasks:
     - name: Print secret variables
       debug:

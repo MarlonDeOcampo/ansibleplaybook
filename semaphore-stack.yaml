@@ -1,7 +1,7 @@
 version: '3.8'
 
 volumes:
-  semaphore-postgres: 
+  semaphore-postgres2: 
 
 networks:
   semaphore-net:
@@ -19,7 +19,7 @@ services:
     networks:
       semaphore-net:
     volumes: 
-      - semaphore-postgres:/var/lib/postgresql/data
+      - semaphore-postgres2:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=semaphore
       - POSTGRES_PASSWORD=semaphore
@@ -31,7 +31,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - /home/node01/ansible_vault:/tmp/semaphore/ansible_vault
+      - /home/node01/ansible_vault:/etc/semaphore/ansible_vault
     networks:
       semaphore-net:
     deploy:
