@@ -30,8 +30,8 @@ services:
     hostname: semaphore
     ports:
       - 3000:3000
-    # volumes:
-    #   - ./requirements.txt:/etc/semaphore/requirements.txt
+    volumes:
+      - /home/node01/ansible_vault:/tmp/semaphore/ansible_vault
     networks:
       semaphore-net:
     deploy:

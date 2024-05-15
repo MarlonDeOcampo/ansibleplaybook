@@ -1,5 +1,8 @@
-- hosts: primary_node
-  become: yes
+- name: Example Playbook
+  hosts: all
+  vars_files:
+    - "~/ansible_vault/secrets.yaml"
   tasks:
-    - name: UpdateRaw
-      shell: apt-get update -y
+    - name: Print secret variables
+      debug:
+        msg: "Node 01 Key: {{ node01key }}, Node 02 Key: {{ node02key }}, Node 03 Key: {{ node03key }}"
